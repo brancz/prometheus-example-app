@@ -11,6 +11,13 @@ import (
 )
 
 var (
+	version = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "version",
+		Help: "Version information about this binary",
+		ConstLabels: map[string]string{
+			"version": "v0.1.0",
+		},
+	})
 	httpRequestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "http_requests_total",
 		Help: "Count of all HTTP requests",
@@ -25,6 +32,7 @@ func main() {
 
 	r := prometheus.NewRegistry()
 	r.MustRegister(httpRequestsTotal)
+	r.MustRegister(version)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
