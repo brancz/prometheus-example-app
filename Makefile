@@ -1,4 +1,4 @@
-VERSION=v0.1.0
+VERSION=v0.2.0
 
 all:
 	CGO_ENABLED=0 go build -o prometheus-example-app --installsuffix cgo main.go
