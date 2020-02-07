@@ -25,6 +25,7 @@ var (
 )
 
 func main() {
+	version.Set(1)
 	bind := ""
 	flagset := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flagset.StringVar(&bind, "bind", ":8080", "The socket to bind to.")
