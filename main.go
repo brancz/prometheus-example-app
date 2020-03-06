@@ -11,11 +11,12 @@ import (
 )
 
 var (
+	appVersion string
 	version = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "version",
 		Help: "Version information about this binary",
 		ConstLabels: map[string]string{
-			"version": "v0.2.0",
+			"version": appVersion,
 		},
 	})
 
