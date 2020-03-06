@@ -1,4 +1,4 @@
-VERSION=v0.2.0
+VERSION:=$(shell cat VERSION)
 
 LDFLAGS="-X main.appVersion=$(VERSION)"
 
