@@ -18,10 +18,16 @@ var (
 			"version": "v0.2.0",
 		},
 	})
+
 	httpRequestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "http_requests_total",
 		Help: "Count of all HTTP requests",
 	}, []string{"code", "method"})
+
+	httpRequestDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "http_request_duration_seconds",
+		Help: "Duration of all HTTP requests",
+	}, []string{"code", "handler", "method"})
 )
 
 func main() {
@@ -33,17 +39,24 @@ func main() {
 
 	r := prometheus.NewRegistry()
 	r.MustRegister(httpRequestsTotal)
+	r.MustRegister(httpRequestDuration)
 	r.MustRegister(version)
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	foundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Hello from example application."))
 	})
-	notfound := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	notfoundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
-	http.Handle("/", promhttp.InstrumentHandlerCounter(httpRequestsTotal, handler))
-	http.Handle("/err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, notfound))
+
+	foundChain := promhttp.InstrumentHandlerDuration(
+		httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": "found"}),
+		promhttp.InstrumentHandlerCounter(httpRequestsTotal, foundHandler),
+	)
+
+	http.Handle("/", foundChain)
+	http.Handle("/err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, notfoundHandler))
 
 	http.Handle("/metrics", promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
 	log.Fatal(http.ListenAndServe(bind, nil))
