@@ -2,28 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    run: prometheus-example-app
+    app.kubernetes.io/name: prometheus-example-app
   name: prometheus-example-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: prometheus-example-app
+      app.kubernetes.io/name: prometheus-example-app
   template:
     metadata:
       labels:
-        run: prometheus-example-app
+        app.kubernetes.io/name: prometheus-example-app
     spec:
       containers:
-      - image: quay.io/brancz/prometheus-example-app:v0.2.0
-        name: prometheus-example-app
-        livenessProbe:
-          httpGet:
-            path: /
-            host: "127.0.0.1"
-            port: 8080
-        readinessProbe:
-          httpGet:
-            path: /
-            host: "127.0.0.1"
-            port: 8080
+      - name: prometheus-example-app
+        image: quay.io/brancz/prometheus-example-app:v0.2.0
+        ports:
+        - name: web
+          containerPort: 8080
