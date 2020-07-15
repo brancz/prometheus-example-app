@@ -12,7 +12,7 @@ First, deploy one instance of this example application, which listens and expose
 
 Then, in order for Prometheus to be able to discover and scrape these metrics, in this repository we provide [Pod Monitor][prometheus-operator-crd] custom resource as an example. For that, Prometheus Operator needs to be running in the cluster. To install it, follow this guide: [quickstart][prometheus-operator-quickstart].
 
-For this example application, [PodMonitor manifest](manifests/deployment.yaml) describes how the metrics can be discovered and scrapped by Prometheus.
+For this example application, [PodMonitor manifest](manifests/pod-monitor.yaml) describes how the metrics can be discovered and scrapped by Prometheus.
 
 [prometheus]:https://prometheus.io/
 [client-golang]:https://github.com/prometheus/client_golang
