@@ -18,3 +18,13 @@ For this example application, [PodMonitor manifest](manifests/pod-monitor.yaml) 
 [client-golang]:https://github.com/prometheus/client_golang
 [prometheus-operator-quickstart]:https://github.com/coreos/prometheus-operator#quickstart
 [prometheus-operator-crd]:https://github.com/coreos/prometheus-operator#customresourcedefinitions
+
+## Exposed Prometheus metrics
+
+This example app exposed the following data over the `/metrics` API, resulting with the `version` metric being collected and exposed in Prometheus.
+
+```
+# HELP version Version information about this binary
+# TYPE version gauge
+version{version="v0.1.0"} 1
+```
