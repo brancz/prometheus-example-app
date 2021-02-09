@@ -26,5 +26,5 @@ This example app exposed the following data over the `/metrics` API, resulting w
 ```
 # HELP version Version information about this binary
 # TYPE version gauge
-version{version="v0.1.0"} 1
+version{version="v0.3.0"} 1
 ```
