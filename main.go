@@ -8,11 +8,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 var (
 	appVersion string
-	version = prometheus.NewGauge(prometheus.GaugeOpts{
+	version    = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "version",
 		Help: "Version information about this binary",
 		ConstLabels: map[string]string{
@@ -34,8 +36,10 @@ var (
 func main() {
 	version.Set(1)
 	bind := ""
+	enableH2c := false
 	flagset := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flagset.StringVar(&bind, "bind", ":8080", "The socket to bind to.")
+	flagset.BoolVar(&enableH2c, "h2c", false, "Enable h2c (http/2 over tcp) protocol.")
 	flagset.Parse(os.Args[1:])
 
 	r := prometheus.NewRegistry()
@@ -56,9 +60,17 @@ func main() {
 		promhttp.InstrumentHandlerCounter(httpRequestsTotal, foundHandler),
 	)
 
-	http.Handle("/", foundChain)
-	http.Handle("/err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, notfoundHandler))
+	mux := http.NewServeMux()
+	mux.Handle("/", foundChain)
+	mux.Handle("/err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, notfoundHandler))
+	mux.Handle("/metrics", promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
 
-	http.Handle("/metrics", promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
-	log.Fatal(http.ListenAndServe(bind, nil))
+	var srv *http.Server
+	if enableH2c {
+		srv = &http.Server{Addr: bind, Handler: h2c.NewHandler(mux, &http2.Server{})}
+	} else {
+		srv = &http.Server{Addr: bind, Handler: mux}
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }
