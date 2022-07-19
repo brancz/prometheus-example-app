@@ -54,6 +54,9 @@ func main() {
 	notfoundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
+    internalErrorHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusInternalServerError)
+    })
 
 	foundChain := promhttp.InstrumentHandlerDuration(
 		httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": "found"}),
@@ -63,6 +66,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", foundChain)
 	mux.Handle("/err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, notfoundHandler))
+	mux.Handle("/internal-err", promhttp.InstrumentHandlerCounter(httpRequestsTotal, internalErrorHandler))
 	mux.Handle("/metrics", promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
 
 	var srv *http.Server
